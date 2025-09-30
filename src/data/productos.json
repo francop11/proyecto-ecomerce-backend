@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "code": "ELEC001",
+    "title": "Smartphone Galaxy S21",
+    "description": "Teléfono inteligente Samsung de 128GB",
+    "stock": 12,
+    "price": 799.99,
+    "status": true,
+    "category": "Celulares",
+    "thumbnails": ["/img/galaxy-s21-1.jpg"]
+  },
+  {
+    "id": 2,
+    "code": "ELEC002",
+    "title": "PlayStation 5",
+    "description": "Consola Sony PS5 edición estándar",
+    "stock": 5,
+    "price": 499.99,
+    "status": true,
+    "category": "Consolas",
+    "thumbnails": ["/img/ps5.jpg"]
+  },
+  {
+    "id": 3,
+    "code": "ELEC003",
+    "title": "Laptop Lenovo IdeaPad",
+    "description": "Laptop con Intel i5 y 8GB RAM",
+    "stock": 8,
+    "price": 649.99,
+    "status": true,
+    "category": "Laptops",
+    "thumbnails": ["/img/lenovo-ideapad.jpg"]
+  },
+  {
+    "id": 4,
+    "code": "ELEC004",
+    "title": "Auriculares Bluetooth",
+    "description": "Auriculares inalámbricos con micrófono",
+    "stock": 25,
+    "price": 39.99,
+    "status": true,
+    "category": "Audio",
+    "thumbnails": ["/img/auriculares-bluetooth.jpg"]
+  },
+  {
+    "id": 5,
+    "code": "ELEC005",
+    "title": "Monitor LG 24''",
+    "description": "Monitor Full HD con panel IPS",
+    "stock": 10,
+    "price": 179.99,
+    "status": false,
+    "category": "Monitores",
+    "thumbnails": ["/img/monitor-lg.jpg"]
+  },
+  {
+    "id": 6,
+    "code": "ELEC006",
+    "title": "Teclado Mecánico RGB",
+    "description": "Teclado con retroiluminación para gaming",
+    "stock": 18,
+    "price": 59.99,
+    "status": true,
+    "category": "Periféricos",
+    "thumbnails": ["/img/teclado-rgb.jpg"]
+  },
+  {
+    "id": 7,
+    "code": "ELEC007",
+    "title": "iPad 9ª Generación",
+    "description": "Tablet Apple de 10.2 pulgadas",
+    "stock": 7,
+    "price": 329.99,
+    "status": true,
+    "category": "Tablets",
+    "thumbnails": ["/img/ipad-9.jpg"]
+  },
+  {
+    "id": 8,
+    "code": "ELEC008",
+    "title": "Cámara GoPro Hero9",
+    "description": "Cámara deportiva 5K impermeable",
+    "stock": 4,
+    "price": 399.99,
+    "status": false,
+    "category": "Cámaras",
+    "thumbnails": ["/img/gopro-hero9.jpg"]
+  },
+  {
+    "id": 9,
+    "code": "ELEC009",
+    "title": "Disco SSD 1TB",
+    "description": "Disco sólido interno SATA",
+    "stock": 14,
+    "price": 109.99,
+    "status": true,
+    "category": "Almacenamiento",
+    "thumbnails": ["/img/ssd-1tb.jpg"]
+  },
+  {
+    "id": 10,
+    "code": "ELEC010",
+    "title": "Smartwatch Xiaomi",
+    "description": "Reloj inteligente con monitor de ritmo cardíaco",
+    "stock": 20,
+    "price": 89.99,
+    "status": true,
+    "category": "Wearables",
+    "thumbnails": ["/img/smartwatch-xiaomi.jpg"]
+  }
+]
