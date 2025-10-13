@@ -125,4 +125,4 @@ class ProductManager {
   }
 }
 
-module.exports = { ProductManager } // exportamos la clase para usarla en la app.js
+module.exports =  ProductManager  // exportamos la clase para usarla en la app.js

@@ -4,11 +4,13 @@
     "code": "ELEC001",
     "title": "Smartphone Galaxy S21",
     "description": "Teléfono inteligente Samsung de 128GB",
-    "stock": 12,
-    "price": 799.99,
+    "stock": 15,
+    "price": 34.99,
     "status": true,
     "category": "Celulares",
-    "thumbnails": ["/img/galaxy-s21-1.jpg"]
+    "thumbnails": [
+      "/img/galaxy-s21-1.jpg"
+    ]
   },
   {
     "id": 2,
@@ -19,7 +21,9 @@
     "price": 499.99,
     "status": true,
     "category": "Consolas",
-    "thumbnails": ["/img/ps5.jpg"]
+    "thumbnails": [
+      "/img/ps5.jpg"
+    ]
   },
   {
     "id": 3,
@@ -30,7 +34,9 @@
     "price": 649.99,
     "status": true,
     "category": "Laptops",
-    "thumbnails": ["/img/lenovo-ideapad.jpg"]
+    "thumbnails": [
+      "/img/lenovo-ideapad.jpg"
+    ]
   },
   {
     "id": 4,
@@ -41,7 +47,9 @@
     "price": 39.99,
     "status": true,
     "category": "Audio",
-    "thumbnails": ["/img/auriculares-bluetooth.jpg"]
+    "thumbnails": [
+      "/img/auriculares-bluetooth.jpg"
+    ]
   },
   {
     "id": 5,
@@ -52,7 +60,9 @@
     "price": 179.99,
     "status": false,
     "category": "Monitores",
-    "thumbnails": ["/img/monitor-lg.jpg"]
+    "thumbnails": [
+      "/img/monitor-lg.jpg"
+    ]
   },
   {
     "id": 6,
@@ -63,7 +73,9 @@
     "price": 59.99,
     "status": true,
     "category": "Periféricos",
-    "thumbnails": ["/img/teclado-rgb.jpg"]
+    "thumbnails": [
+      "/img/teclado-rgb.jpg"
+    ]
   },
   {
     "id": 7,
@@ -74,7 +86,9 @@
     "price": 329.99,
     "status": true,
     "category": "Tablets",
-    "thumbnails": ["/img/ipad-9.jpg"]
+    "thumbnails": [
+      "/img/ipad-9.jpg"
+    ]
   },
   {
     "id": 8,
@@ -85,7 +99,9 @@
     "price": 399.99,
     "status": false,
     "category": "Cámaras",
-    "thumbnails": ["/img/gopro-hero9.jpg"]
+    "thumbnails": [
+      "/img/gopro-hero9.jpg"
+    ]
   },
   {
     "id": 9,
@@ -96,7 +112,9 @@
     "price": 109.99,
     "status": true,
     "category": "Almacenamiento",
-    "thumbnails": ["/img/ssd-1tb.jpg"]
+    "thumbnails": [
+      "/img/ssd-1tb.jpg"
+    ]
   },
   {
     "id": 10,
@@ -107,6 +125,8 @@
     "price": 89.99,
     "status": true,
     "category": "Wearables",
-    "thumbnails": ["/img/smartwatch-xiaomi.jpg"]
+    "thumbnails": [
+      "/img/smartwatch-xiaomi.jpg"
+    ]
   }
 ]
