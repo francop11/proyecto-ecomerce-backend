@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>bienveindos a house gamer </h1>
+
+    <div id="productos">
+        <ul id="productosActualizados"> 
+  {{#each productos}}
+    <li>{{this.title}} - Precio: ${{this.price}}</li>
+  {{/each}}
+</ul>
+
+    </div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/socket.js"></script>
+</body>
+</html>
+
+
+
+
