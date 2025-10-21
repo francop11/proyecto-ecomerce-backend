@@ -6,23 +6,29 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>bienveindos a house gamer </h1>
+   
+    <h1>bienvenidos a house gamer </h1>
 
     <div id="productos">
+        <!-- lista donde se mostrarán los productos actualizados -->
+        <!-- iteramos el array con eaach para mostrar todo los productos de la lista -->
         <ul id="productosActualizados"> 
-  {{#each productos}}
-    <li>{{this.title}} - Precio: ${{this.price}}</li>
-  {{/each}}
-</ul>
-
+          {{#each productos}}
+            <li>{{this.title}} - Precio: ${{this.price}}</li>
+          {{/each}}
+        </ul>
     </div>
 
+    <!-- formulario para agregar un nuevo producto con websockets -->
+    <form id="formNuevoProducto">
+        <input type="text" id="titulo" placeholder="titulo" required>
+        <input type="number" id="precio" placeholder="precio " required>
+        <button type="submit">agregar producto</button>
+    </form>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="/socket.js"></script>
+    <!-- script para conectar con socket en el servidor -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Script propio -->
+    <script src="/socket.js"></script>
 </body>
 </html>
-
-
-
-

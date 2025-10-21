@@ -35,15 +35,27 @@ class ProductManager {
     try {
       // validamos que todos los campos esten completos
       if (
-        !product.title ||
-        !product.code ||
-        !product.description ||
-        !product.stock ||
-        !product.price ||
-        !product.category
+       !product.title || !product.price
       ) {
         throw new Error("faltan campos obligatorios")
       }
+  //si no se proporciona un código, asignamos uno por defecto con un prefijo y la marca de tiempo actual
+   product.code = product.code || "DEFAULT_CODE_" + Date.now()
+
+// si no hay descripción se asigna el texto por defecto
+product.description = product.description || "Sin descripción"
+
+// si no se indica stock se asigna 0 por defecto
+product.stock = product.stock || 0
+
+// si no se especifica categoría se asigna por defecto
+product.category = product.category || "General"
+
+// si el estado no está definido, se asigna true (activo), si está definido se respeta su valor
+product.status = product.status !== undefined ? product.status : true
+
+// si no hay imágenes , se asigna un array vacío para evitar errores
+product.thumbnails = product.thumbnails || []
 
       const productos = await this.getProducts() 
 
