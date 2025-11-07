@@ -1,71 +1,118 @@
-<h1>Listado de Productos</h1>
+<h1>Productos</h1>
 
-<section class="filtros">
-  <form method="GET" action="/products">
-    <label for="limit">Límite:</label>
-    <input type="number" name="limit" id="limit" value="{{filters.limit}}" min="1">
+<!-- Filtros -->
+<form id="filtrosForm">
+  <input type="text" name="query" placeholder="Buscar..." value="{{filters.query}}">
+  <select name="sort">
+    <option value="">Ordenar</option>
+    <option value="asc" {{#eq filters.sort "asc"}}selected{{/eq}}>Precio: menor a mayor</option>
+    <option value="desc" {{#eq filters.sort "desc"}}selected{{/eq}}>Precio: mayor a menor</option>
+  </select>
+  <input type="number" name="limit" placeholder="Cantidad por página" value="{{filters.limit}}">
+  <button type="submit">Aplicar filtros</button>
+</form>
 
-    <label for="sort">Orden:</label>
-    <select name="sort" id="sort">
-      <option value="">-- Sin orden --</option>
-      <option value="asc" {{#if (eq filters.sort "asc")}}selected{{/if}}>Ascendente</option>
-      <option value="desc" {{#if (eq filters.sort "desc")}}selected{{/if}}>Descendente</option>
-    </select>
-
-    <label for="query">Categoría / filtro:</label>
-    <input type="text" name="query" id="query" value="{{filters.query}}">
-
-    <button type="submit">Filtrar</button>
-  </form>
-</section>
-
-<section class="productos">
-  {{#if productos.length}}
-    <ul class="lista-productos">
-      {{#each productos}}
-        <li class="producto">
-          <h3>{{this.title}}</h3>
-          <p>{{this.description}}</p>
-          <p><strong>Precio:</strong> ${{this.price}}</p>
-          <p><strong>Categoría:</strong> {{this.category}}</p>
-
-          <a href="/products/{{this._id}}">Ver detalle</a>
-          <button onclick="agregarAlCarrito('{{this._id}}')">Agregar al carrito</button>
-        </li>
-      {{/each}}
-    </ul>
-
-    <div class="paginacion">
-      {{#if pagination.hasPrevPage}}
-        <a href="{{pagination.prevLink}}">Anterior</a>
-      {{/if}}
-      <span>Página {{pagination.page}} de {{pagination.totalPages}}</span>
-      {{#if pagination.hasNextPage}}
-        <a href="{{pagination.nextLink}}">Siguiente</a>
-      {{/if}}
+<!-- Lista de productos -->
+<div id="productosContainer">
+  {{#each productos}}
+    <div class="productoCard">
+      <h2>{{this.title}}</h2>
+      <p>Precio: ${{this.price}}</p>
+      <button onclick="verDetalle('{{this._id}}')">Ver detalle</button>
+      <button onclick="agregarAlCarrito('{{this._id}}')">Agregar al carrito</button>
     </div>
-  {{else}}
-    <p>No hay productos disponibles.</p>
+  {{/each}}
+</div>
+
+<!-- Paginación -->
+<div id="paginacion">
+  {{#if pagination.hasPrevPage}}
+    <button onclick="irPagina({{pagination.prevPage}})">Anterior</button>
   {{/if}}
-</section>
+  <span>Página {{pagination.page}} de {{pagination.totalPages}}</span>
+  {{#if pagination.hasNextPage}}
+    <button onclick="irPagina({{pagination.nextPage}})">Siguiente</button>
+  {{/if}}
+</div>
+
+<!-- Carrito -->
+<h2>Mi carrito</h2>
+<ul id="carritoLista"></ul>
+<button onclick="vaciarCarrito()">Vaciar carrito</button>
 
 <script>
-  async function agregarAlCarrito(pid) {
-    // suponiendo que el cartId se obtiene del localStorage
+async function agregarAlCarrito(pid) {
+  try {
     let cartId = localStorage.getItem("cartId")
     if (!cartId) {
       const res = await fetch("/api/carts", { method: "POST" })
-      const nuevo = await res.json()
-      cartId = nuevo._id
+      const nuevoCarrito = await res.json()
+      cartId = nuevoCarrito._id
       localStorage.setItem("cartId", cartId)
     }
 
-    const res = await fetch(`/api/carts/${cartId}/product/${pid}`, { method: "POST" })
+    const res = await fetch(`/api/carts/${cartId}/products/${pid}`, { method: "POST" })
     if (res.ok) {
       alert("Producto agregado al carrito ✅")
+      mostrarCarrito(cartId)
     } else {
       const data = await res.json()
       alert("Error al agregar producto ❌: " + (data.error || ""))
     }
+  } catch (err) {
+    console.error("Error:", err)
+    alert("Error al agregar producto ❌")
   }
+}
+
+async function mostrarCarrito(cartId) {
+  try {
+    const res = await fetch(`/api/carts/${cartId}`)
+    if (!res.ok) throw new Error("No se pudo cargar el carrito")
+    const carrito = await res.json()
+
+    const lista = document.getElementById("carritoLista")
+    lista.innerHTML = ""
+    carrito.products.forEach(item => {
+      const li = document.createElement("li")
+      li.textContent = `${item.product.title} - Cantidad: ${item.quantity}`
+      lista.appendChild(li)
+    })
+  } catch (err) {
+    console.error("Error al cargar el carrito:", err)
+  }
+}
+
+async function vaciarCarrito() {
+  try {
+    const cartId = localStorage.getItem("cartId")
+    if (!cartId) return
+    const res = await fetch(`/api/carts/${cartId}`, { method: "DELETE" })
+    if (res.ok) {
+      alert("Carrito vaciado ✅")
+      document.getElementById("carritoLista").innerHTML = ""
+    } else {
+      const data = await res.json()
+      alert("Error al vaciar carrito ❌: " + (data.error || ""))
+    }
+  } catch (err) {
+    console.error("Error al vaciar carrito:", err)
+    alert("Error al vaciar carrito ❌")
+  }
+}
+
+function verDetalle(pid) {
+  window.location.href = `/products/${pid}`
+}
+
+function irPagina(page) {
+  const form = document.getElementById("filtrosForm")
+  const params = new URLSearchParams(new FormData(form))
+  params.set("page", page)
+  window.location.href = `/products?${params.toString()}`
+}
+
+// Mostrar carrito al cargar la página
+const cartId = localStorage.getItem("cartId")
+if (cartId) mostrarCarrito(cartId)
 </script>

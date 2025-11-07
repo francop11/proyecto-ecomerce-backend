@@ -1,30 +1,57 @@
 <h1>Carrito de compras</h1>
 
-{{#if cart.products.length}}
-  <ul>
-    {{#each cart.products}}
-      <li>
-        {{this.product.title}} - ${{this.product.price}} × {{this.quantity}}
-      </li>
-    {{/each}}
-  </ul>
-{{else}}
-  <p>El carrito está vacío</p>
-{{/if}}
-
-<a href="/products">Volver a productos</a>
-<h1>Carrito de compras</h1>
 
 {{#if cart.products.length}}
-  <ul>
-    {{#each cart.products}}
-      <li>
-        {{this.product.title}} - ${{this.product.price}} × {{this.quantity}}
-      </li>
-    {{/each}}
-  </ul>
+<ul>
+{{#each cart.products}}
+<li>
+{{this.product.title}} - ${{this.product.price}} × {{this.quantity}}
+<!-- boton para eliminar un producto del carrito -->
+<button onclick="eliminarDelCarrito('{{../cartId}}','{{this.product._id}}')">Eliminar</button>
+</li>
+{{/each}}
+</ul>
+<!-- boton para vaciar carrito -->
+<button onclick="vaciarCarrito('{{cartId}}')">Vaciar carrito</button>
 {{else}}
-  <p>El carrito está vacío</p>
+<p>El carrito está vacío</p>
 {{/if}}
 
+
 <a href="/products">Volver a productos</a>
+
+
+<script>
+async function eliminarDelCarrito(cid, pid) {
+try {
+const res = await fetch(`/api/carts/${cid}/products/${pid}`, { method: 'DELETE' })
+if (res.ok) {
+alert('Producto eliminado')
+location.reload()
+} else {
+const data = await res.json()
+alert('Error eliminando: ' + (data.error || ''))
+}
+} catch (err) {
+console.error(err)
+alert('Error eliminando producto')
+}
+}
+
+
+async function vaciarCarrito(cid) {
+try {
+const res = await fetch(`/api/carts/${cid}`, { method: 'DELETE' })
+if (res.ok) {
+alert('Carrito vaciado')
+location.reload()
+} else {
+const data = await res.json()
+alert('Error vaciando carrito: ' + (data.error || ''))
+}
+} catch (err) {
+console.error(err)
+alert('Error vaciando carrito')
+}
+}
+</script>

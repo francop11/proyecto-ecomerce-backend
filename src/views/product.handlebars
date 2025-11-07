@@ -1,28 +1,21 @@
 <h1>{{producto.title}}</h1>
+<p><strong>Precio:</strong> ${{producto.price}}</p>
+<p><strong>Stock:</strong> {{producto.stock}}</p>
+<p><strong>Descripción:</strong> {{producto.description}}</p>
 
-<div class="detalle-producto">
-  <p><strong>Descripción:</strong> {{producto.description}}</p>
-  <p><strong>Precio:</strong> ${{producto.price}}</p>
-  <p><strong>Categoría:</strong> {{producto.category}}</p>
-  <p><strong>Stock:</strong> {{producto.stock}}</p>
+<button onclick="agregarAlCarrito('{{producto._id}}')">Agregar al carrito</button>
 
-  <!-- Botón para agregar al carrito -->
-  <button onclick="agregarAlCarrito('{{producto._id}}')">Agregar al carrito</button>
-  <a href="/products">Volver al listado</a>
+<!-- Carrito -->
+<div id="carritoContainer" style="margin-top: 20px;">
+  <h2>Mi carrito</h2>
+  <ul id="carritoLista"></ul>
+  <button onclick="vaciarCarrito()">Vaciar carrito</button>
 </div>
-
-<h2>Mi carrito</h2>
-<ul id="carritoLista">
-  <!-- Aquí se mostrarán los productos agregados -->
-</ul>
 
 <script>
 async function agregarAlCarrito(pid) {
   try {
-    // verificamos si ya existe un carrito en localStorage
     let cartId = localStorage.getItem("cartId")
-
-    // si no existe, creamos uno
     if (!cartId) {
       const res = await fetch("/api/carts", { method: "POST" })
       const nuevoCarrito = await res.json()
@@ -30,8 +23,7 @@ async function agregarAlCarrito(pid) {
       localStorage.setItem("cartId", cartId)
     }
 
-    // agregamos el producto al carrito
-    const res = await fetch(`/api/carts/${cartId}/product/${pid}`, { method: "POST" })
+    const res = await fetch(`/api/carts/${cartId}/products/${pid}`, { method: "POST" })
     if (res.ok) {
       alert("Producto agregado al carrito ✅")
       mostrarCarrito(cartId)
@@ -45,7 +37,6 @@ async function agregarAlCarrito(pid) {
   }
 }
 
-// función para mostrar los productos del carrito
 async function mostrarCarrito(cartId) {
   try {
     const res = await fetch(`/api/carts/${cartId}`)
@@ -64,7 +55,25 @@ async function mostrarCarrito(cartId) {
   }
 }
 
-// mostrar carrito al cargar la página si ya hay uno
+async function vaciarCarrito() {
+  try {
+    const cartId = localStorage.getItem("cartId")
+    if (!cartId) return
+    const res = await fetch(`/api/carts/${cartId}`, { method: "DELETE" })
+    if (res.ok) {
+      alert("Carrito vaciado ✅")
+      document.getElementById("carritoLista").innerHTML = ""
+    } else {
+      const data = await res.json()
+      alert("Error al vaciar carrito ❌: " + (data.error || ""))
+    }
+  } catch (err) {
+    console.error("Error al vaciar carrito:", err)
+    alert("Error al vaciar carrito ❌")
+  }
+}
+
+// Mostrar carrito al cargar la página
 const cartId = localStorage.getItem("cartId")
 if (cartId) mostrarCarrito(cartId)
 </script>

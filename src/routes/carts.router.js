@@ -1,20 +1,20 @@
 const express = require("express")
 const router = express.Router()
+const mongoose = require("mongoose")
 
-// importamos las clases que manejan carritos y productos desde MongoDB
+// importamos los managers
 const CartManagerMongo = require("../dao/CartManagerMongo")
 const ProductManagerMongo = require("../dao/productManagerDB")
 
-// creamos las instancias de los managers
 const cartManager = new CartManagerMongo()
 const productManager = new ProductManagerMongo()
 
-// Ruta para crear un carrito nuevo
+// --------------------------------
+// 🛒 CREAR UN CARRITO NUEVO
+// --------------------------------
 router.post("/", async (req, res) => {
   try {
-    // creamos un carrito nuevo usando el método addCart
     const nuevoCarrito = await cartManager.addCart()
-    // enviamos el carrito creado con status 201
     res.status(201).json(nuevoCarrito)
   } catch (error) {
     console.error("error al crear carrito:", error)
@@ -22,15 +22,21 @@ router.post("/", async (req, res) => {
   }
 })
 
-// obtenemos un carrito por id
+// --------------------------------
+// 🛒 OBTENER CARRITO POR ID
+// --------------------------------
 router.get("/:cid", async (req, res) => {
   try {
     const { cid } = req.params
+    if (!mongoose.Types.ObjectId.isValid(cid)) {
+      return res.status(400).json({ error: "id de carrito inválido" })
+    }
+
     const carrito = await cartManager.getCartWithPopulate(cid)
     if (!carrito) {
       return res.status(404).json({ error: "carrito no encontrado" })
     }
-    // devolvemos el carrito encontrado
+
     res.json(carrito)
   } catch (error) {
     console.error("error al obtener carrito:", error)
@@ -38,49 +44,57 @@ router.get("/:cid", async (req, res) => {
   }
 })
 
-// Agregar producto al carrito
-router.post("/:cid/product/:pid", async (req, res) => {
+// --------------------------------
+// 🛒 AGREGAR PRODUCTO AL CARRITO
+// --------------------------------
+router.post("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
-    // verificamos que el producto exista
+    if (!mongoose.Types.ObjectId.isValid(cid)) return res.status(400).json({ error: "id de carrito inválido" })
+    if (!mongoose.Types.ObjectId.isValid(pid)) return res.status(400).json({ error: "id de producto inválido" })
+
     const producto = await productManager.getProductById(pid)
-    if (!producto || producto.status === "error") {
-      return res.status(404).json({ error: "producto no encontrado" })
-    }
-    // agregamos el producto al carrito
+    if (!producto) return res.status(404).json({ error: "producto no encontrado" })
+
     const carritoActualizado = await cartManager.addProductToCart(cid, pid)
-    // devolvemos el carrito actualizado
     res.json(carritoActualizado)
   } catch (error) {
     console.error("error al agregar producto al carrito:", error)
+    if (error.message && /no encontrado|inválido|sin stock/i.test(error.message)) {
+      return res.status(400).json({ error: error.message })
+    }
     res.status(500).json({ error: "error al agregar producto al carrito" })
   }
 })
 
-// eliminamos un producto del carrito
+// --------------------------------
+// 🛒 ELIMINAR PRODUCTO DEL CARRITO
+// --------------------------------
 router.delete("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
+    if (!mongoose.Types.ObjectId.isValid(cid)) return res.status(400).json({ error: "id de carrito inválido" })
+    if (!mongoose.Types.ObjectId.isValid(pid)) return res.status(400).json({ error: "id de producto inválido" })
+
     const carritoActualizado = await cartManager.deleteProductFromCart(cid, pid)
-    if (!carritoActualizado) {
-      return res.status(404).json({ error: "carrito no encontrado" })
-    }
-    res.json({ mensaje: "producto eliminado del carrito correctamente" })
+    res.json(carritoActualizado)
   } catch (error) {
     console.error("error al eliminar producto del carrito:", error)
     res.status(500).json({ error: "error al eliminar producto del carrito" })
   }
 })
 
-// actualizamos la cantidad de un producto en el carrito
+// --------------------------------
+// 🛒 ACTUALIZAR CANTIDAD DE UN PRODUCTO
+// --------------------------------
 router.put("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
-    const { quantity } = req.body
+    let { quantity } = req.body
+    quantity = Number(quantity)
+    if (isNaN(quantity) || quantity < 0) return res.status(400).json({ error: "cantidad inválida" })
+
     const carritoActualizado = await cartManager.updateProductQuantity(cid, pid, quantity)
-    if (!carritoActualizado) {
-      return res.status(404).json({ error: "carrito no encontrado" })
-    }
     res.json(carritoActualizado)
   } catch (error) {
     console.error("error al actualizar cantidad:", error)
@@ -88,11 +102,15 @@ router.put("/:cid/products/:pid", async (req, res) => {
   }
 })
 
-// reemplazamos los productos del carrito
+// --------------------------------
+// 🛒 REEMPLAZAR TODOS LOS PRODUCTOS DEL CARRITO
+// --------------------------------
 router.put("/:cid", async (req, res) => {
   try {
     const { cid } = req.params
-    const nuevosProductos = req.body.products // recibimos array de productos
+    const nuevosProductos = req.body.products
+    if (!Array.isArray(nuevosProductos)) return res.status(400).json({ error: "se espera un arreglo en body.products" })
+
     const carritoActualizado = await cartManager.updateCartProducts(cid, nuevosProductos)
     res.json(carritoActualizado)
   } catch (error) {
@@ -101,15 +119,14 @@ router.put("/:cid", async (req, res) => {
   }
 })
 
-// vaciamos completamente el carrito
+// --------------------------------
+// 🛒 VACIAR EL CARRITO COMPLETAMENTE
+// --------------------------------
 router.delete("/:cid", async (req, res) => {
   try {
     const { cid } = req.params
     const carritoVacio = await cartManager.clearCart(cid)
-    if (!carritoVacio) {
-      return res.status(404).json({ error: "carrito no encontrado" })
-    }
-    res.json({ mensaje: "carrito vaciado correctamente" })
+    res.json(carritoVacio)
   } catch (error) {
     console.error("error al vaciar carrito:", error)
     res.status(500).json({ error: "error al vaciar carrito" })

@@ -1,132 +1,114 @@
-const Product = require("../models/product.model")
-const mongoose = require("mongoose")
+// importamos el modelo de productos
+const ProductModel = require('../models/product.model')
 
 class ProductManagerMongo {
-  // obtenemos productos con filtros, paginación y orden
-  async getProducts({ limit = 2, page = 1, sort, query }) { // 🟢 cambiamos limit por defecto a 2
+  // método para obtener todos los productos con filtros, paginación y ordenamiento
+  async getProducts({ limit = 10, page = 1, sort, query }) {
     try {
-      // aseguramos que sean numeros validos
-      limit = Number.isFinite(parseInt(limit)) ? parseInt(limit) : 2 // 🟢 default: 2 productos
-      page = Number.isFinite(parseInt(page)) ? parseInt(page) : 1
+      // conversión y validaciones de los parámetros
+      limit = Number(limit)
+      page = Number(page)
+      if (isNaN(limit) || limit <= 0) limit = 10
+      if (isNaN(page) || page <= 0) page = 1
 
       const filter = {}
 
-      // filtramos por categoria o disponibilidad
+      // filtrado por categoría o disponibilidad
       if (query) {
-        if (query === "available") filter.status = true
-        else filter.category = query
+        if (typeof query === 'string' && query.toLowerCase() === 'available') {
+          // filtramos los productos con stock mayor a 0 (disponibilidad)
+          filter.stock = { $gt: 0 }
+        } else {
+          // filtramos por categoría
+          filter.category = query
+        }
       }
 
-      // ordenamos por precio ascedente o descensedente
-      const sortOption =
-        sort === "asc"
-          ? { price: 1 }
-          : sort === "desc"
-          ? { price: -1 }
-          : {}
+      // ordenamiento por precio asc o desc
+      const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {}
 
-      // opciones de pagination
       const options = {
         limit,
         page,
         sort: sortOption,
-        lean: true,
+        lean: true
       }
 
-      // usamos el método paginate del modelo
-      const result = await Product.paginate(filter, options)
+      const result = await ProductModel.paginate(filter, options)
 
-      // reconstruimos los links conservando los paramteros
-      const baseUrl = "/api/products"
-      const queryParams = []
+      // función para construir los links de paginación
+      const baseUrl = '/api/products'
+      const params = []
+      if (limit) params.push(`limit=${encodeURIComponent(limit)}`)
+      if (sort) params.push(`sort=${encodeURIComponent(sort)}`)
+      if (query) params.push(`query=${encodeURIComponent(query)}`)
 
-      if (limit) queryParams.push("limit=" + limit)
-      if (sort) queryParams.push("sort=" + sort)
-      if (query) queryParams.push("query=" + query)
-
-      const buildLink = function (pageNumber) {
+      const buildLink = (pageNumber) => {
         if (!pageNumber) return null
-        let link = baseUrl + "?page=" + pageNumber
-        if (queryParams.length) {
-          link += "&" + queryParams.join("&")
-        }
-        return link
+        const qp = [`page=${pageNumber}`, ...params].join('&')
+        return `${baseUrl}?${qp}`
       }
 
+      // retornamos la estructura de respuesta solicitada en la consigna
       return {
-        status: "success",
+        status: 'success',
         payload: result.docs,
         totalPages: result.totalPages,
-        prevPage: result.prevPage,
-        nextPage: result.nextPage,
+        prevPage: result.hasPrevPage ? result.prevPage : null,
+        nextPage: result.hasNextPage ? result.nextPage : null,
         page: result.page,
         hasPrevPage: result.hasPrevPage,
         hasNextPage: result.hasNextPage,
-        prevLink: buildLink(result.prevPage),
-        nextLink: buildLink(result.nextPage),
+        prevLink: result.hasPrevPage ? buildLink(result.prevPage) : null,
+        nextLink: result.hasNextPage ? buildLink(result.nextPage) : null
       }
     } catch (error) {
-      console.error("error al obtener productos:", error)
-      return { status: "error", error: error.message }
+      console.error('Error al obtener productos:', error)
+      return { status: 'error', error: error.message }
     }
   }
 
-  // obtenemos un producto por id
-  async getProductById(id) {
+  // método para obtener producto por id
+  async getProductById(pid) {
     try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("id de producto inválido")
-      }
-      const product = await Product.findById(id)
-      if (!product) throw new Error("producto no encontrado")
-      return product
+      const producto = await ProductModel.findById(pid).lean()
+      return producto
     } catch (error) {
-      console.error("error al obtener producto por id:", error)
-      return { status: "error", error: error.message }
+      console.error('Error al obtener producto por id:', error)
+      return null
     }
   }
 
-  // agregamos un nuevo producto
-  async addProduct(data) {
+  // método para crear un nuevo producto
+  async addProduct(productData) {
     try {
-      if (!data.title || !data.price || !data.category || !data.stock) {
-        throw new Error("faltan campos obligatorios: título, precio o categoría")
-      }
-      const product = await Product.create(data)
-      return product
+      const nuevoProducto = await ProductModel.create(productData)
+      return nuevoProducto
     } catch (error) {
-      console.error("error al agregar producto:", error)
-      return { status: "error", error: error.message }
+      console.error('Error al crear producto:', error)
+      return null
     }
   }
 
-  // actualizamos el producto
-  async updateProduct(id, data) {
+  // método para actualizar un producto existente
+  async updateProduct(pid, updatedData) {
     try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("id de producto invalido")
-      }
-      const updated = await Product.findByIdAndUpdate(id, data, { new: true })
-      if (!updated) throw new Error("producto no encontrado")
-      return updated
+      const productoActualizado = await ProductModel.findByIdAndUpdate(pid, updatedData, { new: true })
+      return productoActualizado
     } catch (error) {
-      console.error("error al actualizar producto:", error)
-      return { status: "error", error: error.message }
+      console.error('Error al actualizar producto:', error)
+      return null
     }
   }
 
-  // eliminamos el producto
-  async deleteProduct(id) {
+  // método para eliminar un producto
+  async deleteProduct(pid) {
     try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("id de producto invalido")
-      }
-      const deleted = await Product.findByIdAndDelete(id)
-      if (!deleted) throw new Error("producto no encontrado")
-      return deleted
+      const productoEliminado = await ProductModel.findByIdAndDelete(pid)
+      return productoEliminado
     } catch (error) {
-      console.error("error al eliminar producto:", error)
-      return { status: "error", error: error.message }
+      console.error('Error al eliminar producto:', error)
+      return null
     }
   }
 }

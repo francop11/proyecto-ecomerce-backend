@@ -35,10 +35,10 @@ app.use(session({
 app.engine("handlebars", handlebars.engine({
   helpers: {
     multiply: (a, b) => a * b,
-    eq: (a, b) => a === b
+    eq: (a, b) => a === b // helper para comparar valores (reemplaza ifEquals)
   }
 }))
-app.set("views", __dirname + "/views") // carpeta donde estarán las vistas
+app.set("views", path.join(__dirname, "views")) // carpeta donde estarán las vistas
 app.set("view engine", "handlebars") // establecemos handlebars como motor de vistas
 
 // usamos los routers importados
