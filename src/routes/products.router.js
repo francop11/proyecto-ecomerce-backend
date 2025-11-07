@@ -1,113 +1,68 @@
-const express=require("express")
-const router=express.Router()
+const express = require("express")
+const router = express.Router()
 
+// importamos la clase que maneja productos desde MongoDB
+const ProductManagerMongo = require("../dao/productManagerDB")
+const manager = new ProductManagerMongo()
 
-// importamos la clase productmanager para manejar productos
-const ProductManager = require("../dao/productManager")
-
-// la variable manager trae el json desde la ruta especificada
-const manager = new ProductManager("./src/data/productos.json")
-
-
-
-// endpoint para obtener productos ,filtrando por precio y por cierta cantidad de productos
-router.get("/", async (req, res) => {
+// -----------------------------
+// 📦 LISTA DE PRODUCTOS (HOME)
+// -----------------------------
+router.get("/products", async (req, res) => {
   try {
-    
-    const productos = await manager.getProducts() // traemos los produtcos desde el manager
-    // si price esta definidio filtramso los productos
+    // Obtenemos los parámetros de query
+    let { limit, page, sort, query } = req.query
 
+    // Convertimos limit y page a número y damos valor por defecto
+    limit = limit ? parseInt(limit) : 2 // por defecto 2 productos por página
+    page = page ? parseInt(page) : 1
 
-    res.json(productos) // traemos todo los productos en formato json
+    // Obtenemos los productos paginados
+    const resultado = await manager.getProducts({ limit, page, sort, query })
 
+    // Renderizamos la vista con los datos
+    res.render("home", {
+      title: "Productos",
+      productos: resultado.payload || [],
+      pagination: {
+        totalPages: resultado.totalPages,
+        prevPage: resultado.prevPage,
+        nextPage: resultado.nextPage,
+        page: resultado.page,
+        hasPrevPage: resultado.hasPrevPage,
+        hasNextPage: resultado.hasNextPage,
+        prevLink: resultado.prevLink,
+        nextLink: resultado.nextLink
+      },
+      filters: { limit, sort: sort || "", query: query || "" }
+    })
   } catch (error) {
-    console.error(" error al obtener productos:", error)
-    res.status(500).json({ error: "error al obtener los productos" }) 
+    console.error("Error al renderizar products view:", error)
+    res.status(500).send("Error al cargar la vista de productos")
   }
 })
 
-// ruta para obtener un producto por id
-router.get("/:pid", async (req, res) => {
+// --------------------------------
+// 🧾 DETALLE DE UN PRODUCTO
+// --------------------------------
+router.get("/products/:pid", async (req, res) => {
   try {
-    // obtenemos el id por parametro
-    const pid = parseInt(req.params.pid)
-
-    // buscamos el id por pordutco trayendo todos los productos
+    const { pid } = req.params
     const producto = await manager.getProductById(pid)
-
-    // Si no exitse salta el error 404
-    if (!producto) {
-      return res.status(404).json({ error: "Producto no encontrado" })
+    if (!producto || producto.status === "error") {
+      return res.status(404).send("Producto no encontrado")
     }
 
-    // mostramos el producto en formato json
-    res.json(producto)
+    const productoPlano = producto.toObject ? producto.toObject() : producto
+
+    res.render("product", {
+      title: productoPlano.title,
+      producto: productoPlano
+    })
   } catch (error) {
-    
-    console.error("Error al obtener producto:", error)
-    res.status(500).json({ error: "Error al obtener el producto" })
+    console.error("Error al renderizar product detail:", error)
+    res.status(500).send("Error al cargar la vista de detalle del producto")
   }
 })
 
-
-router.post("/",async (req,res)=>{
-    try{
-        const nuevoProducto=req.body
-        const productoAgregado=await manager.addProduct(nuevoProducto)
-        
-    if (!productoAgregado) {
-      return res.status(400).json({ error: "No se pudo agregar el producto" })
-    }
-    res.status(201).json(productoAgregado)
-
-    }
-    catch(error){
-         console.error("Error al agregar producto:", error)
-    res.status(500).json({ error: "Error al agregar producto" })
-
-    }
-
-})
-
-
-
-router.put("/:pid",async (req,res)=>{
-    try{
-          const pid = parseInt(req.params.pid)
-          const productoPorId=req.body
-          const productoModificado=await manager.updateProduct(pid,productoPorId)
-
-          if (!productoModificado) {
-      return res.status(404).json({ error: "Producto no encontrado" })
-    }
-    res.json(productoModificado)
-
-
-    }
-    catch(error){
-        console.error("Error al actualizar producto:", error)
-    res.status(500).json({ error: "Error al actualizar producto" })
-
-    }
-})
-
-router.delete("/:pid",async(req,res)=>{
-    try{
-        const pid=parseInt(req.params.pid)
-        const productoEliminado=await manager.deleteProduct(pid)
-        if(!productoEliminado){
-            return res.status(404).json({ error: "Producto no encontrado" })
-
-        }
-       res.json({ message: "Producto eliminado correctamente" })
-
-    }
-    catch(error){
-         console.error("Error al eliminbar el producto :", error)
-    res.status(500).json({ error: "Error al eliminar el producto" })
-
-
-    }
-})
-
-module.exports = router // Exportamos el router
+module.exports = router

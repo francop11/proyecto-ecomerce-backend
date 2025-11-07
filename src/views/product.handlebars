@@ -1,0 +1,70 @@
+<h1>{{producto.title}}</h1>
+
+<div class="detalle-producto">
+  <p><strong>Descripción:</strong> {{producto.description}}</p>
+  <p><strong>Precio:</strong> ${{producto.price}}</p>
+  <p><strong>Categoría:</strong> {{producto.category}}</p>
+  <p><strong>Stock:</strong> {{producto.stock}}</p>
+
+  <!-- Botón para agregar al carrito -->
+  <button onclick="agregarAlCarrito('{{producto._id}}')">Agregar al carrito</button>
+  <a href="/products">Volver al listado</a>
+</div>
+
+<h2>Mi carrito</h2>
+<ul id="carritoLista">
+  <!-- Aquí se mostrarán los productos agregados -->
+</ul>
+
+<script>
+async function agregarAlCarrito(pid) {
+  try {
+    // verificamos si ya existe un carrito en localStorage
+    let cartId = localStorage.getItem("cartId")
+
+    // si no existe, creamos uno
+    if (!cartId) {
+      const res = await fetch("/api/carts", { method: "POST" })
+      const nuevoCarrito = await res.json()
+      cartId = nuevoCarrito._id
+      localStorage.setItem("cartId", cartId)
+    }
+
+    // agregamos el producto al carrito
+    const res = await fetch(`/api/carts/${cartId}/product/${pid}`, { method: "POST" })
+    if (res.ok) {
+      alert("Producto agregado al carrito ✅")
+      mostrarCarrito(cartId)
+    } else {
+      const data = await res.json()
+      alert("Error al agregar producto ❌: " + (data.error || ""))
+    }
+  } catch (err) {
+    console.error("Error:", err)
+    alert("Error al agregar producto ❌")
+  }
+}
+
+// función para mostrar los productos del carrito
+async function mostrarCarrito(cartId) {
+  try {
+    const res = await fetch(`/api/carts/${cartId}`)
+    if (!res.ok) throw new Error("No se pudo cargar el carrito")
+    const carrito = await res.json()
+
+    const lista = document.getElementById("carritoLista")
+    lista.innerHTML = ""
+    carrito.products.forEach(item => {
+      const li = document.createElement("li")
+      li.textContent = `${item.product.title} - Cantidad: ${item.quantity}`
+      lista.appendChild(li)
+    })
+  } catch (err) {
+    console.error("Error al cargar el carrito:", err)
+  }
+}
+
+// mostrar carrito al cargar la página si ya hay uno
+const cartId = localStorage.getItem("cartId")
+if (cartId) mostrarCarrito(cartId)
+</script>

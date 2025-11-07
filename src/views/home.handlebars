@@ -1,0 +1,71 @@
+<h1>Listado de Productos</h1>
+
+<section class="filtros">
+  <form method="GET" action="/products">
+    <label for="limit">Límite:</label>
+    <input type="number" name="limit" id="limit" value="{{filters.limit}}" min="1">
+
+    <label for="sort">Orden:</label>
+    <select name="sort" id="sort">
+      <option value="">-- Sin orden --</option>
+      <option value="asc" {{#if (eq filters.sort "asc")}}selected{{/if}}>Ascendente</option>
+      <option value="desc" {{#if (eq filters.sort "desc")}}selected{{/if}}>Descendente</option>
+    </select>
+
+    <label for="query">Categoría / filtro:</label>
+    <input type="text" name="query" id="query" value="{{filters.query}}">
+
+    <button type="submit">Filtrar</button>
+  </form>
+</section>
+
+<section class="productos">
+  {{#if productos.length}}
+    <ul class="lista-productos">
+      {{#each productos}}
+        <li class="producto">
+          <h3>{{this.title}}</h3>
+          <p>{{this.description}}</p>
+          <p><strong>Precio:</strong> ${{this.price}}</p>
+          <p><strong>Categoría:</strong> {{this.category}}</p>
+
+          <a href="/products/{{this._id}}">Ver detalle</a>
+          <button onclick="agregarAlCarrito('{{this._id}}')">Agregar al carrito</button>
+        </li>
+      {{/each}}
+    </ul>
+
+    <div class="paginacion">
+      {{#if pagination.hasPrevPage}}
+        <a href="{{pagination.prevLink}}">Anterior</a>
+      {{/if}}
+      <span>Página {{pagination.page}} de {{pagination.totalPages}}</span>
+      {{#if pagination.hasNextPage}}
+        <a href="{{pagination.nextLink}}">Siguiente</a>
+      {{/if}}
+    </div>
+  {{else}}
+    <p>No hay productos disponibles.</p>
+  {{/if}}
+</section>
+
+<script>
+  async function agregarAlCarrito(pid) {
+    // suponiendo que el cartId se obtiene del localStorage
+    let cartId = localStorage.getItem("cartId")
+    if (!cartId) {
+      const res = await fetch("/api/carts", { method: "POST" })
+      const nuevo = await res.json()
+      cartId = nuevo._id
+      localStorage.setItem("cartId", cartId)
+    }
+
+    const res = await fetch(`/api/carts/${cartId}/product/${pid}`, { method: "POST" })
+    if (res.ok) {
+      alert("Producto agregado al carrito ✅")
+    } else {
+      const data = await res.json()
+      alert("Error al agregar producto ❌: " + (data.error || ""))
+    }
+  }
+</script>
