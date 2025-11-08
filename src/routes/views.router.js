@@ -1,13 +1,12 @@
 const express = require("express")
 const router = express.Router()
 
-// Managers desde DAO
+// iportamos los managers
 const ProductManagerMongo = require("../dao/productManagerDB")
 const ProductManager = new ProductManagerMongo()
 
-// -----------------------------
-// 📦 LISTA DE PRODUCTOS (VISTA HOME)
-// -----------------------------
+
+// lista de productos
 router.get("/products", async (req, res) => {
   try {
     let { limit, page, sort, query } = req.query
@@ -18,7 +17,7 @@ router.get("/products", async (req, res) => {
 
     if (!resultado || resultado.status === "error") {
       console.error("error al obtener productos para la vista:", resultado ? resultado.error : "resultado inválido")
-      return res.status(500).send("Error al cargar la vista de productos")
+      return res.status(500).send("error al cargar la vista de productos")
     }
 
     res.render("home", {
@@ -37,20 +36,19 @@ router.get("/products", async (req, res) => {
       filters: { limit: limit || 10, sort: sort || "", query: query || "" }
     })
   } catch (error) {
-    console.error("Error al renderizar products view:", error)
-    res.status(500).send("Error al cargar la vista de productos")
+    console.error("eror al renderizar products view:", error)
+    res.status(500).send("error al cargar la vista de productos")
   }
 })
 
-// --------------------------------
-// 🧾 DETALLE DE UN PRODUCTO (VISTA)
-// --------------------------------
+
+// detalle de un producto
 router.get("/products/:pid", async (req, res) => {
   try {
     const { pid } = req.params
     const producto = await ProductManager.getProductById(pid)
     if (!producto || producto.status === "error") {
-      return res.status(404).send("Producto no encontrado")
+      return res.status(404).send("producto no encontrado")
     }
 
     const productoPlano = producto.toObject ? producto.toObject() : producto
@@ -60,8 +58,8 @@ router.get("/products/:pid", async (req, res) => {
       producto: productoPlano
     })
   } catch (error) {
-    console.error("Error al renderizar product detail:", error)
-    res.status(500).send("Error al cargar la vista de detalle del producto")
+    console.error("error al renderizar product detail:", error)
+    res.status(500).send("error al cargar la vista de detalle del producto")
   }
 })
 

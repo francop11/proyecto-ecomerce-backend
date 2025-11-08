@@ -1,57 +1,67 @@
 <h1>Carrito de compras</h1>
 
-
+{{!-- si el carrito tiene productos los mostramos --}}
 {{#if cart.products.length}}
-<ul>
-{{#each cart.products}}
-<li>
-{{this.product.title}} - ${{this.product.price}} × {{this.quantity}}
-<!-- boton para eliminar un producto del carrito -->
-<button onclick="eliminarDelCarrito('{{../cartId}}','{{this.product._id}}')">Eliminar</button>
-</li>
-{{/each}}
-</ul>
-<!-- boton para vaciar carrito -->
-<button onclick="vaciarCarrito('{{cartId}}')">Vaciar carrito</button>
+  <ul>
+    {{!-- recorremos todos los productos del carrito --}}
+    {{#each cart.products}}
+      <li>
+        {{this.product.title}} - ${{this.product.price}} × {{this.quantity}}
+        <!-- boton para eliminar un producto del carrito -->
+        <button onclick="eliminarDelCarrito('{{../cartId}}','{{this.product._id}}')">Eliminar</button>
+      </li>
+    {{/each}}
+  </ul>
+
+  <!-- boton para vaciar todo el carrito -->
+  <button onclick="vaciarCarrito('{{cartId}}')">Vaciar carrito</button>
+
+{{!-- si no hay productos mostramos un mensaje --}}
 {{else}}
-<p>El carrito está vacío</p>
+  <p>El carrito está vacío</p>
 {{/if}}
 
-
+<!-- link para volver a la vista de productos -->
 <a href="/products">Volver a productos</a>
 
-
 <script>
-async function eliminarDelCarrito(cid, pid) {
-try {
-const res = await fetch(`/api/carts/${cid}/products/${pid}`, { method: 'DELETE' })
-if (res.ok) {
-alert('Producto eliminado')
-location.reload()
-} else {
-const data = await res.json()
-alert('Error eliminando: ' + (data.error || ''))
-}
-} catch (err) {
-console.error(err)
-alert('Error eliminando producto')
-}
-}
+  // función para eliminar un producto específico del carrito
+  async function eliminarDelCarrito(cid, pid) {
+    try {
+      // hacemos una peticion delete al enpoind del carrito
+      const res = await fetch(`/api/carts/${cid}/products/${pid}`, { method: "DELETE" })
 
+      // si todo sale bien  mostramos msj y recaragmos la pagina
+      if (res.ok) {
+        alert("Producto eliminado")
+        location.reload()
+      } else {
+        const data = await res.json()
+        alert("error eliminando: " + (data.error || ""))
+      }
+    } catch (err) {
+      // error si falla la conexion
+      console.error(err)
+      alert("error eliminando producto")
+    }
+  }
 
-async function vaciarCarrito(cid) {
-try {
-const res = await fetch(`/api/carts/${cid}`, { method: 'DELETE' })
-if (res.ok) {
-alert('Carrito vaciado')
-location.reload()
-} else {
-const data = await res.json()
-alert('Error vaciando carrito: ' + (data.error || ''))
-}
-} catch (err) {
-console.error(err)
-alert('Error vaciando carrito')
-}
-}
+  // funcion para vaciar completo el carrito
+  async function vaciarCarrito(cid) {
+    try {
+      // hacemos una petición delte al carrito completo
+      const res = await fetch(`/api/carts/${cid}`, { method: "DELETE" })
+
+      if (res.ok) {
+        alert("Carrito vaciado")
+        location.reload()
+      } else {
+        const data = await res.json()
+        alert("error vaciando carrito: " + (data.error || ""))
+      }
+    } catch (err) {
+      console.error(err)
+      alert("error vaciando carrito")
+    }
+  }
 </script>

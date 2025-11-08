@@ -4,78 +4,95 @@ const CartModel = require("../models/cart.model")
 const ProductModel = require("../models/product.model")
 
 class CartManagerMongo {
-  // método para crear un carrito vacio
+
+  // creamos un carrito 
   async addCart() {
     const nuevoCarrito = await CartModel.create({ products: [] })
     return nuevoCarrito
   }
 
-  // obtenemos carrito por id (sin populate)
-  async getCartById(cid) {
-    // validamos que cid sea un ObjectId válido
-    if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
-    const carrito = await CartModel.findById(cid)
-    return carrito
-  }
-
-  // obtenemos carrito con products poblados
+  // obtenemos un carrito por id 
   async getCartWithPopulate(cid) {
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
+
+    // buscamos el carrito y populamos los productos
     const carrito = await CartModel.findById(cid).populate("products.product")
     if (!carrito) throw new Error("carrito no encontrado")
-    return carrito
+
+    // calculamos el total sumando precio por cantidad de cada producto
+    const total = carrito.products.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
+
+    // convertimos a objeto normal y agregamos el total
+    const carritoObj = carrito.toObject()
+    carritoObj.total = total
+    return carritoObj
   }
 
-  // agregamos productos al carrito
+  // agregamos un producto al carrito y si ya esta se le suma uno
   async addProductToCart(cid, pid) {
-    // validaciones de ids
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
     if (!mongoose.Types.ObjectId.isValid(pid)) throw new Error("id de producto inválido")
 
     const carrito = await CartModel.findById(cid)
-    if (!carrito) throw new Error("Carrito no encontrado")
+    if (!carrito) throw new Error("carrito no encontrado")
 
     const producto = await ProductModel.findById(pid)
     if (!producto) throw new Error("Producto no encontrado")
+    if (typeof producto.stock === "number" && producto.stock <= 0) throw new Error("producto sin stock disponible")
 
-    // opcional: validar stock antes de agregar
-    if (typeof producto.stock === "number" && producto.stock <= 0) {
-      throw new Error("Producto sin stock disponible")
-    }
-
-    // buscamos si el producto ya existe en el carrito
+    // verificamos si el producto ya exite
     const item = carrito.products.find(p => p.product.toString() === pid)
 
     if (item) {
-      // si ya está, sumamos 1 a la cantidad
+      // si ya esta sumamos la cantidad
       item.quantity += 1
     } else {
-      // si no está, lo agregamos con cantidad 1
+      // si no esta no lo agregamos como nuevo
       carrito.products.push({ product: pid, quantity: 1 })
     }
 
     await carrito.save()
-    // devolvemos el carrito ya poblado de productos completos
+
+    // traemos el carrito con el totla actualizado
     const carritoPopulado = await CartModel.findById(cid).populate("products.product")
-    return carritoPopulado
+    const total = carritoPopulado.products.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
+
+    const carritoObj = carritoPopulado.toObject()
+    carritoObj.total = total
+    return carritoObj
   }
 
-  // eliminar un producto del carrito
+  // eliminamos un producto 
   async deleteProductFromCart(cid, pid) {
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
     if (!mongoose.Types.ObjectId.isValid(pid)) throw new Error("id de producto inválido")
 
     const carrito = await CartModel.findById(cid)
-    if (!carrito) throw new Error("Carrito no encontrado")
+    if (!carrito) throw new Error("carrito no encontrado")
 
+    // filtramos el producto 
     carrito.products = carrito.products.filter(p => p.product.toString() !== pid)
     await carrito.save()
-    // devolver carrito poblado actualizado
+
+    // recalculamos el total
     const carritoPopulado = await CartModel.findById(cid).populate("products.product")
-    return carritoPopulado
+    const total = carritoPopulado.products.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
+
+    const carritoObj = carritoPopulado.toObject()
+    carritoObj.total = total
+    return carritoObj
   }
 
-  // actualizar la cantidad de un producto
+  // actualizamos la cantidad de un producto que ya no esta en el carrito
   async updateProductQuantity(cid, pid, quantity) {
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
     if (!mongoose.Types.ObjectId.isValid(pid)) throw new Error("id de producto inválido")
@@ -83,14 +100,14 @@ class CartManagerMongo {
     const carrito = await CartModel.findById(cid)
     if (!carrito) throw new Error("carrito no encontrado")
 
+    // buscamos el producto dentro del carrito
     const item = carrito.products.find(p => p.product.toString() === pid)
     if (!item) throw new Error("producto no está en el carrito")
 
-    // validamos que quantity sea número positivo
     quantity = Number(quantity)
     if (isNaN(quantity) || quantity < 0) throw new Error("cantidad inválida")
 
-    // si la cantidad es 0, lo eliminamos del carrito
+    // si la cantidad es 0 se elimina,sino se actualiza
     if (quantity === 0) {
       carrito.products = carrito.products.filter(p => p.product.toString() !== pid)
     } else {
@@ -98,23 +115,27 @@ class CartManagerMongo {
     }
 
     await carrito.save()
-    // devolver carrito poblado actualizado
+
+    // recalculamos el total actualizado
     const carritoPopulado = await CartModel.findById(cid).populate("products.product")
-    return carritoPopulado
+    const total = carritoPopulado.products.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
+
+    const carritoObj = carritoPopulado.toObject()
+    carritoObj.total = total
+    return carritoObj
   }
 
-  // reemplazar todos los productos del carrito
+  // reemplazamos todos los productos del carrito por un nuevo arreglo
   async updateCartProducts(cid, nuevosProductos) {
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
-
-    // validamos que el payload sea un array
     if (!Array.isArray(nuevosProductos)) throw new Error("productos inválidos, se espera un arreglo")
 
-    // opcional: validar estructura de cada elemento: { product: ObjectId, quantity: Number }
+    // validamos que cada producto tenga id y cantidad 
     const productosValidos = nuevosProductos.map(p => {
-      if (!p.product || !mongoose.Types.ObjectId.isValid(p.product)) {
-        throw new Error("id de producto inválido en el arreglo")
-      }
+      if (!p.product || !mongoose.Types.ObjectId.isValid(p.product)) throw new Error("id de producto inválido en el arreglo")
       const qty = Number(p.quantity) || 1
       if (qty < 0) throw new Error("cantidad inválida en el arreglo")
       return { product: p.product, quantity: qty }
@@ -125,22 +146,34 @@ class CartManagerMongo {
 
     carrito.products = productosValidos
     await carrito.save()
-    // devolver carrito poblado actualizado
+
+    // recalculamos el total
     const carritoPopulado = await CartModel.findById(cid).populate("products.product")
-    return carritoPopulado
+    const total = carritoPopulado.products.reduce((sum, item) => {
+      const price = item.product?.price || 0
+      return sum + price * item.quantity
+    }, 0)
+
+    const carritoObj = carritoPopulado.toObject()
+    carritoObj.total = total
+    return carritoObj
   }
 
-  // vaciamos completamente el carrito
+  // vaciamos todo el carrito
   async clearCart(cid) {
     if (!mongoose.Types.ObjectId.isValid(cid)) throw new Error("id de carrito inválido")
+
     const carrito = await CartModel.findById(cid)
     if (!carrito) throw new Error("carrito no encontrado")
 
     carrito.products = []
     await carrito.save()
-    // devolver carrito poblado (aunque vacío) para coherencia
+
+    // devolvemos el carrito vacio
     const carritoPopulado = await CartModel.findById(cid).populate("products.product")
-    return carritoPopulado
+    const carritoObj = carritoPopulado.toObject()
+    carritoObj.total = 0
+    return carritoObj
   }
 }
 

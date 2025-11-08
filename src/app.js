@@ -23,11 +23,11 @@ app.use(express.static(path.join(__dirname, "../public/"))) // carpeta pública 
 app.use(express.json()) // para interpretar JSON en las peticiones
 app.use(express.urlencoded({ extended: true })) // para interpretar datos enviados desde formularios
 
-// configuración de sesiones
+// configuracion de sesiones
 app.use(session({
   secret: "miSecretoSuperSeguro", // cualquier string secreto
-  resave: false, // no guardar la sesión si no hay cambios
-  saveUninitialized: true, // guardar sesión nueva aunque no tenga datos
+  resave: false, // no guardar la sesion si no hay cambios
+  saveUninitialized: true, // guardar sesion nueva aunque no tenga datos
   cookie: { maxAge: 1000 * 60 * 60 } // 1 hora de duración
 }))
 
@@ -54,8 +54,8 @@ io.on("connection", async (socket) => {
     const productos = result && result.payload ? result.payload : [] // tomamos el array de productos
     socket.emit("productosList", productos) // enviamos la lista inicial al cliente
   } catch (error) {
-    console.error("Error al obtener productos:", error)
-    socket.emit("productosList", []) // si falla, enviamos lista vacía
+    console.error("error al obtener productos:", error)
+    socket.emit("productosList", []) // si falla, enviamos lista vacia
   }
 
   // escuchamos cuando el cliente agrega un producto nuevo
@@ -66,7 +66,7 @@ io.on("connection", async (socket) => {
       const productosActualizados = result && result.payload ? result.payload : []
       io.emit("productosList", productosActualizados) // enviamos la lista actualizada
     } catch (error) {
-      console.error("Error al agregar producto:", error)
+      console.error("error al agregar producto:", error)
     }
   })
 
@@ -78,7 +78,7 @@ io.on("connection", async (socket) => {
       const productosActualizados = result && result.payload ? result.payload : []
       io.emit("productosList", productosActualizados) // emitimos la lista actualizada
     } catch (error) {
-      console.error("Error al eliminar producto:", error)
+      console.error("error al eliminar producto:", error)
     }
   })
 })

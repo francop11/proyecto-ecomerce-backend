@@ -2,9 +2,9 @@ const mongoose = require("mongoose") // importamos mongoose
 const dotenv = require("dotenv") // importamos dotenv para variables de entorno  
 dotenv.config() // cargamos las variables de entorno  
 
-const Product = require("../models/product.model") // tu modelo de productos  
+const Product = require("../models/product.model") // importamos el medelo de productos 
 
-// productos de ejemplo para poblar la base si está vacía  
+// productos de ejemplo 
 const productosEjemplo = [
   { title: "Smartphone Samsung Galaxy S24", description: "Pantalla AMOLED, 256GB, triple cámara", price: 850000, category: "celulares", stock: 15 },
   { title: "iPhone 15 Pro", description: "Chip A17 Pro, 128GB, Titanium Edition", price: 1200000, category: "celulares", stock: 10 },
@@ -23,19 +23,19 @@ async function connectMongo() {
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
-    }) // nos conectamos a MongoDB  
-    console.log("✅ Conectado a MongoDB")
+    }) // nos conectamos a Mongo
+    console.log(" Conectado a MongoDB")
 
-    // verificamos la cantidad de documentos en la colección de productos
+    // verificamos la cantidad de documentos en la coleccion
     const count = await Product.countDocuments()
     if (count === 0) {
-      // si está vacía, insertamos los productos de ejemplo
+      // si está vacia insertamos los productos de ejemplo
       await Product.insertMany(productosEjemplo)
-      console.log("🌱 Productos de ejemplo insertados automáticamente")
+      console.log("productos de ejemplo insertados automáticamente")
     }
   } catch (error) {
-    console.error("❌ Error al conectar a MongoDB:", error)
-    throw error // lanzamos para que quien lo llame pueda manejarlo  
+    console.error("error al conectar a MongoDB:", error)
+    throw error
   }
 }
 

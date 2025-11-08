@@ -2,34 +2,29 @@ const express = require("express")
 const router = express.Router()
 const mongoose = require("mongoose")
 
-// importamos la clase que maneja productos desde MongoDB
+// importamos la clase que maneja productos desde Mongo
 const ProductManagerMongo = require("../dao/productManagerDB")
 const manager = new ProductManagerMongo()
 
-// -----------------------------
-//  API REST: PRODUCTOS
-// -----------------------------
 
-// LISTAR PRODUCTOS CON PAGINACIÓN, FILTROS Y ORDENAMIENTO
-// acepta query params: limit (default 10), page (default 1), sort (asc|desc), query (categoria o 'available')
+
 router.get("/", async (req, res) => {
   try {
     // leemos params de query
     let { limit, page, sort, query } = req.query
 
-    // no forzamos defaults aquí con 2, usamos 10 como pide la consigna
-    // manager.getProducts ya hace la validación, pero parseamos números por claridad
+  
     limit = limit ? Number(limit) : undefined
     page = page ? Number(page) : undefined
 
     const resultado = await manager.getProducts({ limit, page, sort, query })
 
-    // si manager devolvió error, lo propagamos
+    // si manager devuelve error lo propogamos
     if (!resultado || resultado.status === "error") {
       return res.status(500).json({ status: "error", error: resultado ? resultado.error : "error desconocido" })
     }
 
-    // devolvemos exactamente el objeto que pide la consigna
+    // devolvemos el obejto
     return res.status(200).json({
       status: "success",
       payload: resultado.payload,
@@ -48,11 +43,11 @@ router.get("/", async (req, res) => {
   }
 })
 
-// obtener un producto por id
+// obtenemos un producto por id
 router.get("/:pid", async (req, res) => {
   try {
     const { pid } = req.params
-    // validación básica de id
+    // validamos el id
     if (!mongoose.Types.ObjectId.isValid(pid)) {
       return res.status(400).json({ status: "error", error: "id de producto inválido" })
     }
@@ -69,11 +64,11 @@ router.get("/:pid", async (req, res) => {
   }
 })
 
-// agregar un nuevo producto
+// agregamos un nuevo producto
 router.post("/", async (req, res) => {
   try {
     const data = req.body
-    // validación mínima: title y price y category y stock
+    // validaciones
     if (!data.title || data.price == null || !data.category || data.stock == null) {
       return res.status(400).json({ status: "error", error: "faltan campos obligatorios: title, price, category, stock" })
     }
@@ -90,7 +85,7 @@ router.post("/", async (req, res) => {
   }
 })
 
-// actualizar un producto por id
+// actualizamos un producto por id
 router.put("/:pid", async (req, res) => {
   try {
     const { pid } = req.params
@@ -112,7 +107,7 @@ router.put("/:pid", async (req, res) => {
   }
 })
 
-// eliminar un producto por id
+// eliminamos un producto por id
 router.delete("/:pid", async (req, res) => {
   try {
     const { pid } = req.params

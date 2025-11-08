@@ -9,9 +9,9 @@ const ProductManagerMongo = require("../dao/productManagerDB")
 const cartManager = new CartManagerMongo()
 const productManager = new ProductManagerMongo()
 
-// --------------------------------
-// 🛒 CREAR UN CARRITO NUEVO
-// --------------------------------
+
+// creamos un nuevo carrito
+
 router.post("/", async (req, res) => {
   try {
     const nuevoCarrito = await cartManager.addCart()
@@ -22,9 +22,8 @@ router.post("/", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 OBTENER CARRITO POR ID
-// --------------------------------
+
+// obtenemos un carrito por id
 router.get("/:cid", async (req, res) => {
   try {
     const { cid } = req.params
@@ -44,9 +43,8 @@ router.get("/:cid", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 AGREGAR PRODUCTO AL CARRITO
-// --------------------------------
+
+// agregamos un producto al carrito
 router.post("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
@@ -67,9 +65,8 @@ router.post("/:cid/products/:pid", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 ELIMINAR PRODUCTO DEL CARRITO
-// --------------------------------
+
+// eliminamos un producto del carrito
 router.delete("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
@@ -84,9 +81,8 @@ router.delete("/:cid/products/:pid", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 ACTUALIZAR CANTIDAD DE UN PRODUCTO
-// --------------------------------
+
+// actualizamos la cantidad de un producto
 router.put("/:cid/products/:pid", async (req, res) => {
   try {
     const { cid, pid } = req.params
@@ -102,9 +98,7 @@ router.put("/:cid/products/:pid", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 REEMPLAZAR TODOS LOS PRODUCTOS DEL CARRITO
-// --------------------------------
+// reemplzamos los productos del carrito
 router.put("/:cid", async (req, res) => {
   try {
     const { cid } = req.params
@@ -119,9 +113,8 @@ router.put("/:cid", async (req, res) => {
   }
 })
 
-// --------------------------------
-// 🛒 VACIAR EL CARRITO COMPLETAMENTE
-// --------------------------------
+
+// vaciamos el carrito completamente
 router.delete("/:cid", async (req, res) => {
   try {
     const { cid } = req.params

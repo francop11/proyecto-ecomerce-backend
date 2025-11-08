@@ -2,7 +2,7 @@ const mongoose = require("mongoose") // importamos mongoose
 
 // definimos el esquema del carrito
 const cartSchema = new mongoose.Schema({
-  // el carrito tendrá un array de productos
+  // el carrito tendra un array de productos
   products: [
     {
       // cada producto es una referencia al modelo Product
@@ -19,10 +19,10 @@ const cartSchema = new mongoose.Schema({
   ]
 },
 {
-  timestamps: true // agrega createdAt y updatedAt automáticamente
+  timestamps: true // agregamos createdAt y updatedAt de manera automatica
 })
 
-// Creamos el modelo Cart 
+// creamos el modelo Cart 
 const CartModel = mongoose.model("Cart", cartSchema)
 
 module.exports = CartModel

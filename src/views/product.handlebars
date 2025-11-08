@@ -9,6 +9,7 @@
 <div id="carritoContainer" style="margin-top: 20px;">
   <h2>Mi carrito</h2>
   <ul id="carritoLista"></ul>
+  <p id="carritoTotal"><strong>Total:</strong> $0</p>
   <button onclick="vaciarCarrito()">Vaciar carrito</button>
 </div>
 
@@ -25,33 +26,35 @@ async function agregarAlCarrito(pid) {
 
     const res = await fetch(`/api/carts/${cartId}/products/${pid}`, { method: "POST" })
     if (res.ok) {
-      alert("Producto agregado al carrito ✅")
+      alert("producto agregado al carrito ")
       mostrarCarrito(cartId)
     } else {
       const data = await res.json()
-      alert("Error al agregar producto ❌: " + (data.error || ""))
+      alert("error al agregar producto : " + (data.error || ""))
     }
   } catch (err) {
-    console.error("Error:", err)
-    alert("Error al agregar producto ❌")
+    console.error("error:", err)
+    alert("error al agregar producto ")
   }
 }
 
 async function mostrarCarrito(cartId) {
   try {
     const res = await fetch(`/api/carts/${cartId}`)
-    if (!res.ok) throw new Error("No se pudo cargar el carrito")
+    if (!res.ok) throw new Error("no se pudo cargar el carrito")
     const carrito = await res.json()
 
     const lista = document.getElementById("carritoLista")
     lista.innerHTML = ""
     carrito.products.forEach(item => {
       const li = document.createElement("li")
-      li.textContent = `${item.product.title} - Cantidad: ${item.quantity}`
+      li.textContent = `${item.product.title} - Cantidad: ${item.quantity} - Subtotal: $${item.product.price * item.quantity}`
       lista.appendChild(li)
     })
+
+    document.getElementById("carritoTotal").textContent = `Total: $${carrito.total || 0}`
   } catch (err) {
-    console.error("Error al cargar el carrito:", err)
+    console.error("error al cargar el carrito:", err)
   }
 }
 
@@ -61,19 +64,20 @@ async function vaciarCarrito() {
     if (!cartId) return
     const res = await fetch(`/api/carts/${cartId}`, { method: "DELETE" })
     if (res.ok) {
-      alert("Carrito vaciado ✅")
+      alert("carrito vaciado ")
       document.getElementById("carritoLista").innerHTML = ""
+      document.getElementById("carritoTotal").textContent = "Total: $0"
     } else {
       const data = await res.json()
-      alert("Error al vaciar carrito ❌: " + (data.error || ""))
+      alert("error al vaciar carrito : " + (data.error || ""))
     }
   } catch (err) {
-    console.error("Error al vaciar carrito:", err)
-    alert("Error al vaciar carrito ❌")
+    console.error(err)
+    alert("error al vaciar carrito ")
   }
 }
 
-// Mostrar carrito al cargar la página
+// mostrar carrito al cargar la página
 const cartId = localStorage.getItem("cartId")
 if (cartId) mostrarCarrito(cartId)
 </script>

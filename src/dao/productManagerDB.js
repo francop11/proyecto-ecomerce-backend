@@ -1,11 +1,11 @@
 // importamos el modelo de productos
-const ProductModel = require('../models/product.model')
+const ProductModel = require("../models/product.model")
 
 class ProductManagerMongo {
-  // método para obtener todos los productos con filtros, paginación y ordenamiento
+  // metodo para obtner todos los productos con filtros
   async getProducts({ limit = 10, page = 1, sort, query }) {
     try {
-      // conversión y validaciones de los parámetros
+      // conversion y validacion de los parametros
       limit = Number(limit)
       page = Number(page)
       if (isNaN(limit) || limit <= 0) limit = 10
@@ -13,19 +13,19 @@ class ProductManagerMongo {
 
       const filter = {}
 
-      // filtrado por categoría o disponibilidad
+      // filtro por categoria o disponibilidad
       if (query) {
-        if (typeof query === 'string' && query.toLowerCase() === 'available') {
-          // filtramos los productos con stock mayor a 0 (disponibilidad)
+        if (typeof query === "string" && query.toLowerCase() === "available") {
+          // filtramos los productos con stock 
           filter.stock = { $gt: 0 }
         } else {
-          // filtramos por categoría
+          // filtramos por categoria
           filter.category = query
         }
       }
 
-      // ordenamiento por precio asc o desc
-      const sortOption = sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {}
+      // orden por precio ascendente o descendente
+      const sortOption = sort === "asc" ? { price: 1 } : sort === "desc" ? { price: -1 } : {}
 
       const options = {
         limit,
@@ -36,8 +36,8 @@ class ProductManagerMongo {
 
       const result = await ProductModel.paginate(filter, options)
 
-      // función para construir los links de paginación
-      const baseUrl = '/api/products'
+      // creamos los link de paginacion
+      const baseUrl = "/api/products"
       const params = []
       if (limit) params.push(`limit=${encodeURIComponent(limit)}`)
       if (sort) params.push(`sort=${encodeURIComponent(sort)}`)
@@ -45,13 +45,12 @@ class ProductManagerMongo {
 
       const buildLink = (pageNumber) => {
         if (!pageNumber) return null
-        const qp = [`page=${pageNumber}`, ...params].join('&')
+        const qp = [`page=${pageNumber}`, ...params].join("&")
         return `${baseUrl}?${qp}`
       }
 
-      // retornamos la estructura de respuesta solicitada en la consigna
       return {
-        status: 'success',
+        status: "success",
         payload: result.docs,
         totalPages: result.totalPages,
         prevPage: result.hasPrevPage ? result.prevPage : null,
@@ -63,51 +62,51 @@ class ProductManagerMongo {
         nextLink: result.hasNextPage ? buildLink(result.nextPage) : null
       }
     } catch (error) {
-      console.error('Error al obtener productos:', error)
-      return { status: 'error', error: error.message }
+      console.error("error al obtener productos:", error)
+      return { status: "error", error: error.message }
     }
   }
 
-  // método para obtener producto por id
+  // metodo para traer un producto por id
   async getProductById(pid) {
     try {
       const producto = await ProductModel.findById(pid).lean()
       return producto
     } catch (error) {
-      console.error('Error al obtener producto por id:', error)
+      console.error("error al obtener producto por id:", error)
       return null
     }
   }
 
-  // método para crear un nuevo producto
+  // metodo para crear un nuevo producto
   async addProduct(productData) {
     try {
       const nuevoProducto = await ProductModel.create(productData)
       return nuevoProducto
     } catch (error) {
-      console.error('Error al crear producto:', error)
+      console.error("error al crear producto:", error)
       return null
     }
   }
 
-  // método para actualizar un producto existente
+  // metodo para actualizar un producto
   async updateProduct(pid, updatedData) {
     try {
       const productoActualizado = await ProductModel.findByIdAndUpdate(pid, updatedData, { new: true })
       return productoActualizado
     } catch (error) {
-      console.error('Error al actualizar producto:', error)
+      console.error("error al actualizar producto:", error)
       return null
     }
   }
 
-  // método para eliminar un producto
+  // metodo para eliminar un producto
   async deleteProduct(pid) {
     try {
       const productoEliminado = await ProductModel.findByIdAndDelete(pid)
       return productoEliminado
     } catch (error) {
-      console.error('Error al eliminar producto:', error)
+      console.error("error al eliminar producto:", error)
       return null
     }
   }
